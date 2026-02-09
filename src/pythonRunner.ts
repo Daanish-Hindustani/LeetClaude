@@ -5,6 +5,7 @@ export interface TestResult {
     passed: boolean;
     output: string;
     expected: string;
+    stdout?: string;
     error?: string;
 }
 
@@ -62,30 +63,41 @@ export class PythonRunner {
                         passed: false,
                         output: '',
                         expected: JSON.stringify(testCase.expected),
+                        stdout: '',
                         error: 'Timeout: Code took longer than 2 seconds'
                     });
                     return;
                 }
 
                 if (stderr) {
+                    const MARKER = '===LEETCLAUDE_RESULT===';
+                    const markerParts = stdout.split(MARKER);
+                    const userPrints = markerParts.length > 1 ? markerParts[0].trim() : '';
                     resolve({
                         passed: false,
-                        output: stdout.trim(),
+                        output: '',
                         expected: JSON.stringify(testCase.expected),
+                        stdout: userPrints,
                         error: this.cleanError(stderr)
                     });
                     return;
                 }
 
                 try {
-                    const output = stdout.trim();
-                    const result = JSON.parse(output);
+                    // Split by marker to separate user prints from test result
+                    const MARKER = '===LEETCLAUDE_RESULT===';
+                    const parts = stdout.split(MARKER);
+                    const userPrints = parts.length > 1 ? parts[0].trim() : '';
+                    const resultStr = (parts.length > 1 ? parts[1] : parts[0]).trim();
+
+                    const result = JSON.parse(resultStr);
                     const passed = JSON.stringify(result) === JSON.stringify(testCase.expected);
 
                     resolve({
                         passed,
                         output: JSON.stringify(result),
                         expected: JSON.stringify(testCase.expected),
+                        stdout: userPrints,
                         error: passed ? undefined : 'Output does not match expected'
                     });
                 } catch {
@@ -93,6 +105,7 @@ export class PythonRunner {
                         passed: false,
                         output: stdout.trim(),
                         expected: JSON.stringify(testCase.expected),
+                        stdout: '',
                         error: 'Failed to parse output'
                     });
                 }
@@ -104,6 +117,7 @@ export class PythonRunner {
                     passed: false,
                     output: '',
                     expected: JSON.stringify(testCase.expected),
+                    stdout: '',
                     error: `Failed to run Python: ${err.message}`
                 });
             });
@@ -126,8 +140,10 @@ ${userCode}
 # Test harness
 try:
     result = ${functionName}(${argsStr})
+    print("===LEETCLAUDE_RESULT===")
     print(json.dumps(result))
 except Exception as e:
+    print("===LEETCLAUDE_RESULT===")
     print(f"Error: {e}", file=sys.stderr)
     sys.exit(1)
 `;

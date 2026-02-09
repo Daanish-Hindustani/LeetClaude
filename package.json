@@ -27,7 +27,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && cp src/problems.json out/problems.json",
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {

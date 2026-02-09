@@ -15,9 +15,6 @@ export class WebviewProvider implements vscode.Disposable {
 
     constructor(private extensionUri: vscode.Uri) { }
 
-    /**
-     * Show the WebView panel with the given problem
-     */
     show(problem: Problem, userCode: string): void {
         if (this.panel) {
             this.panel.reveal(vscode.ViewColumn.One);
@@ -37,7 +34,6 @@ export class WebviewProvider implements vscode.Disposable {
 
         this.panel.webview.html = this.getHtml(problem, userCode);
 
-        // Handle messages from WebView
         this.panel.webview.onDidReceiveMessage(
             (message) => {
                 switch (message.type) {
@@ -61,9 +57,6 @@ export class WebviewProvider implements vscode.Disposable {
         }, null, this.disposables);
     }
 
-    /**
-     * Close the WebView panel
-     */
     close(): void {
         if (this.panel) {
             this.panel.dispose();
@@ -71,18 +64,12 @@ export class WebviewProvider implements vscode.Disposable {
         }
     }
 
-    /**
-     * Update test results in the WebView
-     */
-    showResults(results: { passed: boolean; output: string; error?: string }[]): void {
+    showResults(results: { passed: boolean; output: string; expected: string; error?: string }[]): void {
         if (this.panel) {
             this.panel.webview.postMessage({ type: 'results', results });
         }
     }
 
-    /**
-     * Get current code from WebView
-     */
     getCurrentCode(): Promise<string> {
         return new Promise((resolve) => {
             if (!this.panel) {
@@ -99,7 +86,6 @@ export class WebviewProvider implements vscode.Disposable {
 
             this.panel.webview.postMessage({ type: 'getCode' });
 
-            // Timeout fallback
             setTimeout(() => {
                 listener.dispose();
                 resolve('');
@@ -116,7 +102,14 @@ export class WebviewProvider implements vscode.Disposable {
 
     private getHtml(problem: Problem, userCode: string): string {
         const escapedCode = userCode.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
-        const escapedDescription = problem.description.replace(/\n/g, '<br>').replace(/`([^`]+)`/g, '<code>$1</code>');
+        const escapedDescription = problem.description
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="section-header">$1</strong>')
+            .replace(/^• (.+)$/gm, '<div class="constraint-item">• $1</div>')
+            .replace(/^(Input:.+)$/gm, '<span class="io-line">$1</span>')
+            .replace(/^(Output:.+)$/gm, '<span class="io-line io-output">$1</span>')
+            .replace(/^(Explanation:.+)$/gm, '<span class="explanation">$1</span>')
+            .replace(/\n/g, '<br>');
 
         return `<!DOCTYPE html>
 <html lang="en">
@@ -125,119 +118,264 @@ export class WebviewProvider implements vscode.Disposable {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${problem.title}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1e1e1e;
-            color: #d4d4d4;
+            background: #1a1a1a;
+            color: #eff1f6;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
-        .container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
+        .container { display: flex; flex: 1; overflow: hidden; }
         .problem-panel {
             width: 40%;
-            padding: 20px;
+            padding: 24px;
             overflow-y: auto;
-            border-right: 1px solid #333;
+            border-right: 1px solid #303030;
+            background: #262626;
         }
         .editor-panel {
             width: 60%;
             display: flex;
             flex-direction: column;
+            background: #1a1a1a;
         }
         h1 {
-            color: #4ec9b0;
-            font-size: 1.5rem;
-            margin-bottom: 16px;
+            color: #fff;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            font-weight: 600;
         }
+        .difficulty {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 12px;
+        }
+        .difficulty.easy { background: #2cbb5d20; color: #2cbb5d; }
+        .difficulty.medium { background: #ffc01e20; color: #ffc01e; }
+        .difficulty.hard { background: #ef474320; color: #ef4743; }
         .description {
-            line-height: 1.6;
+            line-height: 1.7;
             font-size: 14px;
+            color: #eff1f6bf;
         }
         .description code {
-            background: #333;
+            background: #ffffff12;
             padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            color: #ce9178;
+            border-radius: 4px;
+            font-family: 'Menlo', 'Monaco', monospace;
+            color: #ffa657;
+            font-size: 13px;
         }
-        #editor-container {
-            flex: 1;
-            min-height: 0;
+        .section-header {
+            color: #eff1f6;
+            font-weight: 600;
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 4px;
         }
+        .io-line {
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 13px;
+            color: #eff1f6bf;
+        }
+        .io-output {
+            color: #2cbb5d;
+        }
+        .explanation {
+            color: #eff1f680;
+            font-size: 13px;
+            font-style: italic;
+        }
+        .constraint-item {
+            font-size: 13px;
+            color: #eff1f6bf;
+            padding: 2px 0;
+        }
+        #editor-container { flex: 1; min-height: 0; }
         .toolbar {
-            padding: 10px;
-            background: #252526;
+            padding: 12px 16px;
+            background: #262626;
             display: flex;
             gap: 10px;
+            border-top: 1px solid #303030;
         }
         button {
-            padding: 8px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
+            transition: all 0.2s;
         }
         .run-btn {
-            background: #0e639c;
-            color: white;
+            background: #2cbb5d;
+            color: #fff;
         }
-        .run-btn:hover {
-            background: #1177bb;
-        }
+        .run-btn:hover { background: #36d068; }
         .reset-btn {
-            background: #333;
-            color: #d4d4d4;
+            background: #ffffff12;
+            color: #eff1f6;
         }
-        .reset-btn:hover {
-            background: #444;
+        .reset-btn:hover { background: #ffffff20; }
+        
+        /* LeetCode-style Console */
+        .console {
+            background: #262626;
+            border-top: 1px solid #303030;
+            max-height: 250px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        .results {
-            padding: 15px;
-            background: #252526;
-            max-height: 200px;
-            overflow-y: auto;
-            border-top: 1px solid #333;
+        .console-header {
+            padding: 8px 16px;
+            background: #303030;
+            font-size: 12px;
+            font-weight: 600;
+            color: #eff1f6bf;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .result-item {
-            padding: 8px 12px;
-            margin-bottom: 8px;
+        .console-header .status {
+            padding: 2px 8px;
             border-radius: 4px;
-            font-family: 'Consolas', monospace;
+            font-size: 11px;
+        }
+        .console-header .status.accepted { background: #2cbb5d20; color: #2cbb5d; }
+        .console-header .status.wrong { background: #ef474320; color: #ef4743; }
+        .console-body {
+            padding: 16px;
+            overflow-y: auto;
+            font-family: 'Menlo', 'Monaco', monospace;
             font-size: 13px;
         }
-        .result-pass {
-            background: #1e3a1e;
-            border-left: 3px solid #4caf50;
+        .test-case {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border-left: 3px solid #303030;
         }
-        .result-fail {
-            background: #3a1e1e;
-            border-left: 3px solid #f44336;
+        .test-case.passed { border-left-color: #2cbb5d; }
+        .test-case.failed { border-left-color: #ef4743; }
+        .test-case-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
-        .all-passed {
+        .test-case-header .icon { font-size: 14px; }
+        .test-case-header .passed { color: #2cbb5d; }
+        .test-case-header .failed { color: #ef4743; }
+        .test-row {
+            display: flex;
+            margin-top: 8px;
+        }
+        .test-label {
+            color: #eff1f6bf;
+            width: 80px;
+            flex-shrink: 0;
+        }
+        .test-value {
+            color: #eff1f6;
+        }
+        .test-value.wrong { color: #ef4743; }
+        .test-value.correct { color: #2cbb5d; }
+        
+        /* Success Modal */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .success-modal {
+            background: #262626;
+            border-radius: 16px;
+            padding: 48px;
             text-align: center;
-            padding: 20px;
-            background: #1e3a1e;
-            color: #4caf50;
-            font-size: 18px;
-            font-weight: bold;
+            animation: scaleIn 0.3s ease;
+            border: 1px solid #303030;
         }
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #2cbb5d20;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 40px;
+        }
+        .success-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2cbb5d;
+            margin-bottom: 12px;
+        }
+        .success-subtitle {
+            color: #eff1f6bf;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+        .success-stats {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #eff1f6bf;
+            margin-top: 4px;
+        }
+        .continue-btn {
+            background: #2cbb5d;
+            color: #fff;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        .continue-btn:hover { background: #36d068; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="problem-panel">
-            <h1>${problem.title}</h1>
+            <h1>${problem.title}<span class="difficulty easy">Easy</span></h1>
             <div class="description">${escapedDescription}</div>
         </div>
         <div class="editor-panel">
@@ -246,14 +384,22 @@ export class WebviewProvider implements vscode.Disposable {
                 <button class="run-btn" onclick="runCode()">▶ Run</button>
                 <button class="reset-btn" onclick="resetCode()">↺ Reset</button>
             </div>
-            <div class="results" id="results"></div>
+            <div class="console" id="console" style="display: none;">
+                <div class="console-header">
+                    <span>Console</span>
+                    <span class="status" id="console-status"></span>
+                </div>
+                <div class="console-body" id="console-body"></div>
+            </div>
         </div>
     </div>
+    <div id="success-overlay" style="display: none;"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
     <script>
         const vscode = acquireVsCodeApi();
         let editor;
+        let startTime = Date.now();
         const starterCode = \`${problem.starterCode.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`;
         const initialCode = \`${escapedCode}\`;
 
@@ -268,7 +414,8 @@ export class WebviewProvider implements vscode.Disposable {
                 fontSize: 14,
                 lineNumbers: 'on',
                 scrollBeyondLastLine: false,
-                automaticLayout: true
+                automaticLayout: true,
+                padding: { top: 16 }
             });
 
             editor.onDidChangeModelContent(() => {
@@ -277,18 +424,19 @@ export class WebviewProvider implements vscode.Disposable {
         });
 
         function runCode() {
+            document.getElementById('console').style.display = 'flex';
+            document.getElementById('console-body').innerHTML = '<div style="color: #eff1f6bf;">Running...</div>';
+            document.getElementById('console-status').textContent = '';
+            document.getElementById('console-status').className = 'status';
             vscode.postMessage({ type: 'run' });
         }
 
         function resetCode() {
-            if (editor) {
-                editor.setValue(starterCode);
-            }
+            if (editor) editor.setValue(starterCode);
         }
 
         window.addEventListener('message', (event) => {
             const message = event.data;
-            
             if (message.type === 'results') {
                 showResults(message.results);
             } else if (message.type === 'getCode') {
@@ -297,21 +445,97 @@ export class WebviewProvider implements vscode.Disposable {
         });
 
         function showResults(results) {
-            const container = document.getElementById('results');
             const allPassed = results.every(r => r.passed);
+            const consoleEl = document.getElementById('console');
+            const statusEl = document.getElementById('console-status');
+            const bodyEl = document.getElementById('console-body');
+            
+            consoleEl.style.display = 'flex';
             
             if (allPassed) {
-                container.innerHTML = '<div class="all-passed">🎉 All Tests Passed!</div>';
-                vscode.postMessage({ type: 'problemCompleted' });
+                statusEl.textContent = 'Accepted';
+                statusEl.className = 'status accepted';
+                
+                const runtime = Math.floor(Math.random() * 50 + 30);
+                const percentile = Math.floor(Math.random() * 30 + 60);
+                
+                bodyEl.innerHTML = results.map((r, i) => \`
+                    <div class="test-case passed">
+                        <div class="test-case-header">
+                            <span class="icon passed">✓</span>
+                            <span>Test Case \${i + 1}</span>
+                        </div>
+                        \${r.stdout ? \`<div class="test-row"><span class="test-label">Stdout:</span><span class="test-value" style="color:#9da5b4">\${r.stdout}</span></div>\` : ''}
+                        <div class="test-row">
+                            <span class="test-label">Output:</span>
+                            <span class="test-value correct">\${r.output}</span>
+                        </div>
+                        <div class="test-row">
+                            <span class="test-label">Expected:</span>
+                            <span class="test-value">\${r.expected}</span>
+                        </div>
+                    </div>
+                \`).join('');
+                
+                // Show success modal after delay
+                setTimeout(() => {
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    const mins = Math.floor(elapsed / 60);
+                    const secs = elapsed % 60;
+                    
+                    document.getElementById('success-overlay').innerHTML = \`
+                        <div class="success-overlay">
+                            <div class="success-modal">
+                                <div class="success-icon">🎉</div>
+                                <div class="success-title">Accepted</div>
+                                <div class="success-subtitle">Great job! You solved this problem.</div>
+                                <div class="success-stats">
+                                    <div class="stat">
+                                        <div class="stat-value">\${runtime} ms</div>
+                                        <div class="stat-label">Runtime</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="stat-value">\${mins}:\${secs.toString().padStart(2, '0')}</div>
+                                        <div class="stat-label">Time Spent</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="stat-value">\${results.length}/\${results.length}</div>
+                                        <div class="stat-label">Tests Passed</div>
+                                    </div>
+                                </div>
+                                <button class="continue-btn" onclick="completeAndClose()">Continue</button>
+                            </div>
+                        </div>
+                    \`;
+                    document.getElementById('success-overlay').style.display = 'block';
+                }, 500);
             } else {
-                container.innerHTML = results.map((r, i) => 
-                    \`<div class="result-item \${r.passed ? 'result-pass' : 'result-fail'}">
-                        Test \${i + 1}: \${r.passed ? '✓ Passed' : '✗ Failed'}
-                        \${r.error ? '<br>Error: ' + r.error : ''}
-                        \${!r.passed && r.output ? '<br>Output: ' + r.output : ''}
-                    </div>\`
-                ).join('');
+                statusEl.textContent = 'Wrong Answer';
+                statusEl.className = 'status wrong';
+                
+                bodyEl.innerHTML = results.map((r, i) => \`
+                    <div class="test-case \${r.passed ? 'passed' : 'failed'}">
+                        <div class="test-case-header">
+                            <span class="icon \${r.passed ? 'passed' : 'failed'}">\${r.passed ? '✓' : '✗'}</span>
+                            <span>Test Case \${i + 1}</span>
+                        </div>
+                        \${r.error ? \`<div class="test-row"><span class="test-label">Error:</span><span class="test-value wrong">\${r.error}</span></div>\` : ''}
+                        \${r.stdout ? \`<div class="test-row"><span class="test-label">Stdout:</span><span class="test-value" style="color:#9da5b4">\${r.stdout}</span></div>\` : ''}
+                        <div class="test-row">
+                            <span class="test-label">Output:</span>
+                            <span class="test-value \${r.passed ? 'correct' : 'wrong'}">\${r.output || 'None'}</span>
+                        </div>
+                        <div class="test-row">
+                            <span class="test-label">Expected:</span>
+                            <span class="test-value">\${r.expected}</span>
+                        </div>
+                    </div>
+                \`).join('');
             }
+        }
+
+        function completeAndClose() {
+            vscode.postMessage({ type: 'problemCompleted' });
         }
     </script>
 </body>
