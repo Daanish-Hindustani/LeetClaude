@@ -1,0 +1,269 @@
+{
+    "problems": [
+        {
+            "id": "two-sum",
+            "title": "Two Sum",
+            "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.",
+            "starterCode": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Your code here\n    pass",
+            "testCases": [
+                {
+                    "input": [
+                        [
+                            2,
+                            7,
+                            11,
+                            15
+                        ],
+                        9
+                    ],
+                    "expected": [
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "input": [
+                        [
+                            3,
+                            2,
+                            4
+                        ],
+                        6
+                    ],
+                    "expected": [
+                        1,
+                        2
+                    ]
+                },
+                {
+                    "input": [
+                        [
+                            3,
+                            3
+                        ],
+                        6
+                    ],
+                    "expected": [
+                        0,
+                        1
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "valid-palindrome",
+            "title": "Valid Palindrome",
+            "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.\n\nGiven a string `s`, return `true` if it is a palindrome, or `false` otherwise.",
+            "starterCode": "def isPalindrome(s: str) -> bool:\n    # Your code here\n    pass",
+            "testCases": [
+                {
+                    "input": [
+                        "A man, a plan, a canal: Panama"
+                    ],
+                    "expected": true
+                },
+                {
+                    "input": [
+                        "race a car"
+                    ],
+                    "expected": false
+                },
+                {
+                    "input": [
+                        " "
+                    ],
+                    "expected": true
+                }
+            ]
+        },
+        {
+            "id": "reverse-string",
+            "title": "Reverse String",
+            "description": "Write a function that reverses a string. The input string is given as an array of characters `s`.\n\nYou must do this by modifying the input array in-place with O(1) extra memory.\n\nReturn the reversed array.",
+            "starterCode": "def reverseString(s: list[str]) -> list[str]:\n    # Your code here\n    pass",
+            "testCases": [
+                {
+                    "input": [
+                        [
+                            "h",
+                            "e",
+                            "l",
+                            "l",
+                            "o"
+                        ]
+                    ],
+                    "expected": [
+                        "o",
+                        "l",
+                        "l",
+                        "e",
+                        "h"
+                    ]
+                },
+                {
+                    "input": [
+                        [
+                            "H",
+                            "a",
+                            "n",
+                            "n",
+                            "a",
+                            "h"
+                        ]
+                    ],
+                    "expected": [
+                        "h",
+                        "a",
+                        "n",
+                        "n",
+                        "a",
+                        "H"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "fizz-buzz",
+            "title": "Fizz Buzz",
+            "description": "Given an integer `n`, return a string array `answer` (1-indexed) where:\n\n- `answer[i] == \"FizzBuzz\"` if `i` is divisible by 3 and 5.\n- `answer[i] == \"Fizz\"` if `i` is divisible by 3.\n- `answer[i] == \"Buzz\"` if `i` is divisible by 5.\n- `answer[i] == i` (as a string) if none of the above conditions are true.",
+            "starterCode": "def fizzBuzz(n: int) -> list[str]:\n    # Your code here\n    pass",
+            "testCases": [
+                {
+                    "input": [
+                        3
+                    ],
+                    "expected": [
+                        "1",
+                        "2",
+                        "Fizz"
+                    ]
+                },
+                {
+                    "input": [
+                        5
+                    ],
+                    "expected": [
+                        "1",
+                        "2",
+                        "Fizz",
+                        "4",
+                        "Buzz"
+                    ]
+                },
+                {
+                    "input": [
+                        15
+                    ],
+                    "expected": [
+                        "1",
+                        "2",
+                        "Fizz",
+                        "4",
+                        "Buzz",
+                        "Fizz",
+                        "7",
+                        "8",
+                        "Fizz",
+                        "Buzz",
+                        "11",
+                        "Fizz",
+                        "13",
+                        "14",
+                        "FizzBuzz"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "maximum-subarray",
+            "title": "Maximum Subarray",
+            "description": "Given an integer array `nums`, find the subarray with the largest sum, and return its sum.\n\nA subarray is a contiguous non-empty sequence of elements within an array.",
+            "starterCode": "def maxSubArray(nums: list[int]) -> int:\n    # Your code here\n    pass",
+            "testCases": [
+                {
+                    "input": [
+                        [
+                            -2,
+                            1,
+                            -3,
+                            4,
+                            -1,
+                            2,
+                            1,
+                            -5,
+                            4
+                        ]
+                    ],
+                    "expected": 6
+                },
+                {
+                    "input": [
+                        [
+                            1
+                        ]
+                    ],
+                    "expected": 1
+                },
+                {
+                    "input": [
+                        [
+                            5,
+                            4,
+                            -1,
+                            7,
+                            8
+                        ]
+                    ],
+                    "expected": 23
+                }
+            ]
+        },
+        {
+            "id": "contains-duplicate",
+            "title": "Contains Duplicate",
+            "description": "Given an integer array `nums`, return `true` if any value appears at least twice in the array, and return `false` if every element is distinct.",
+            "starterCode": "def containsDuplicate(nums: list[int]) -> bool:\n    # Your code here\n    pass",
+            "testCases": [
+                {
+                    "input": [
+                        [
+                            1,
+                            2,
+                            3,
+                            1
+                        ]
+                    ],
+                    "expected": true
+                },
+                {
+                    "input": [
+                        [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    ],
+                    "expected": false
+                },
+                {
+                    "input": [
+                        [
+                            1,
+                            1,
+                            1,
+                            3,
+                            3,
+                            4,
+                            3,
+                            2,
+                            4,
+                            2
+                        ]
+                    ],
+                    "expected": true
+                }
+            ]
+        }
+    ]
+}

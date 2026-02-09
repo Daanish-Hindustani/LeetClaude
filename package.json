@@ -1,0 +1,38 @@
+{
+  "name": "leetclaude",
+  "displayName": "LeetClaude",
+  "description": "Practice LeetCode while AI agents code for you",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "leetclaude.showProblem",
+        "title": "LeetClaude: Show Problem"
+      },
+      {
+        "command": "leetclaude.stopProblem",
+        "title": "LeetClaude: Close Problem"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}
