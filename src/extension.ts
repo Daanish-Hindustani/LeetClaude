@@ -4,16 +4,18 @@ import { StateManager, AppState } from './stateManager';
 import { ProblemProvider } from './problemProvider';
 import { WebviewProvider } from './webviewProvider';
 import { PythonRunner } from './pythonRunner';
+import { IPCServer } from './server/ipcServer';
 
 let agentDetector: AgentDetector;
 let stateManager: StateManager;
 let problemProvider: ProblemProvider;
 let webviewProvider: WebviewProvider;
 let pythonRunner: PythonRunner;
+let ipcServer: IPCServer;
 let currentProblemId: string | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('LeetClaude: Extension activated');
+
 
     // Initialize components
     stateManager = new StateManager();
@@ -21,6 +23,20 @@ export function activate(context: vscode.ExtensionContext) {
     problemProvider = new ProblemProvider(context);
     webviewProvider = new WebviewProvider(context.extensionUri);
     pythonRunner = new PythonRunner();
+    ipcServer = new IPCServer();
+
+    // Start IPC Server
+    ipcServer.start();
+
+    // Handle IPC events
+    ipcServer.onStatusChange((data) => {
+
+        if (data.status === 'coding' || data.status === 'thinking') {
+            stateManager.transition(AppState.AgentActive);
+        } else if (data.status === 'idle') {
+            stateManager.transition(AppState.Idle);
+        }
+    });
 
     // Handle state changes
     stateManager.onStateChange((newState: AppState) => {
@@ -30,10 +46,17 @@ export function activate(context: vscode.ExtensionContext) {
         } else if (newState === AppState.Idle) {
             webviewProvider.close();
         } else if (newState === AppState.ProblemCompleted) {
-            console.log('LeetClaude: Problem completed! Clearing state.');
             currentProblemId = undefined;
             problemProvider.markCompleted();
-            stateManager.transition(AppState.Idle);
+
+            // If the agent is still active, immediately show another problem
+            if (agentDetector.isActive) {
+                console.log('LeetClaude: Agent still active, loading next problem...');
+                showProblem();
+                stateManager.transition(AppState.ProblemShown);
+            } else {
+                stateManager.transition(AppState.Idle);
+            }
         }
     });
 
@@ -43,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     webviewProvider.onRunClick(async () => {
-        console.log('LeetClaude: Run clicked');
+
         if (!currentProblemId) return;
 
         const problem = problemProvider.getProblemById(currentProblemId);
@@ -61,31 +84,31 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Listen for agent activity
     agentDetector.onAgentStart(() => {
-        console.log('LeetClaude: Agent started');
+
         stateManager.transition(AppState.AgentActive);
     });
 
     agentDetector.onAgentEnd(() => {
-        console.log('LeetClaude: Agent ended');
+
         stateManager.transition(AppState.Idle);
     });
 
     // Register manual trigger command (for testing)
     const showCommand = vscode.commands.registerCommand('leetclaude.showProblem', () => {
-        console.log('LeetClaude: Manual trigger');
+
         stateManager.transition(AppState.AgentActive);
     });
 
     // Register stop command
     const stopCommand = vscode.commands.registerCommand('leetclaude.stopProblem', () => {
-        console.log('LeetClaude: Manual stop');
+
         stateManager.transition(AppState.Idle);
     });
 
     // Start monitoring
     agentDetector.startMonitoring(context);
 
-    context.subscriptions.push(showCommand, stopCommand, agentDetector, webviewProvider);
+    context.subscriptions.push(showCommand, stopCommand, agentDetector, webviewProvider, ipcServer);
 }
 
 function showProblem(): void {
@@ -105,5 +128,5 @@ function extractFunctionName(starterCode: string): string {
 }
 
 export function deactivate() {
-    console.log('LeetClaude: Extension deactivated');
+
 }

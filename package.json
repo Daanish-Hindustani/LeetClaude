@@ -3,11 +3,26 @@
   "displayName": "LeetClaude",
   "description": "Practice LeetCode while AI agents code for you",
   "version": "0.0.1",
+  "icon": "logo.jpeg",
+  "publisher": "your-publisher-id",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/leetclaude"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "leetcode",
+    "coding",
+    "practice",
+    "interview",
+    "agent",
+    "ai"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -34,5 +49,9 @@
     "@types/node": "^20.10.0",
     "@types/vscode": "^1.85.0",
     "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^4.3.6"
   }
 }

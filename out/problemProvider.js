@@ -49,7 +49,6 @@ class ProblemProvider {
             const data = fs.readFileSync(problemsPath, 'utf-8');
             const parsed = JSON.parse(data);
             this.problems = parsed.problems;
-            console.log(`LeetClaude: Loaded ${this.problems.length} problems`);
         }
         catch (error) {
             console.error('LeetClaude: Failed to load problems', error);
@@ -65,13 +64,11 @@ class ProblemProvider {
             // Resume existing problem
             const problem = this.problems.find(p => p.id === state.problemId);
             if (problem) {
-                console.log(`LeetClaude: Resuming problem "${problem.title}"`);
                 return { problem, userCode: state.userCode };
             }
         }
         // Select new random problem
         if (this.problems.length === 0) {
-            console.log('LeetClaude: No problems available');
             return null;
         }
         const randomIndex = Math.floor(Math.random() * this.problems.length);
@@ -82,7 +79,6 @@ class ProblemProvider {
             userCode: problem.starterCode,
             completed: false
         });
-        console.log(`LeetClaude: Selected new problem "${problem.title}"`);
         return { problem, userCode: problem.starterCode };
     }
     /**
@@ -99,7 +95,6 @@ class ProblemProvider {
      * Mark current problem as completed and clear state
      */
     markCompleted() {
-        console.log('LeetClaude: Problem completed, clearing state');
         this.context.globalState.update(STATE_KEY, undefined);
     }
     /**

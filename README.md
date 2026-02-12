@@ -1,12 +1,12 @@
 # LeetClaude
 
-**Practice LeetCode while AI agents code for you.**
+**Practice LeetCode while you vibe code.**
 
-LeetClaude is a VS Code extension that turns your idle time into productive practice. When it detects an AI agent (like Claude, Cursor, or GitHub Copilot) writing code in your editor, it automatically opens a LeetCode problem in a side panel for you to solve.
+LeetClaude is a VS Code extension that allows you to practice LeetCode while you vibe code. When it detects an AI agent (like Claude, Cursor, or GitHub Copilot) writing code in your editor or thinking, it automatically opens a LeetCode problem in a side panel for you to solve. When the agent finishes its task, the panel closes and you can return to your vibe coding session.
 
 ## Features
 
-- **🤖 Automatic Agent Detection**: Intelligently monitors editor activity to detect when an AI is generating code (rapid, sustained edits).
+- **🤖 Automatic Agent Detection**: Monitors editor activity through an MCP to detect when an AI is generating code or thinking.
 - **⚡ Instant Challenges**: A LeetCode-style problem immediately appears when agent activity is detected.
 - **📝 Embedded Code Editor**: Full-featured Monaco editor with Python support.
 - **🏃 Local Test Runner**: Runs your solution against test cases locally using your system's Python installation.
@@ -15,29 +15,58 @@ LeetClaude is a VS Code extension that turns your idle time into productive prac
 
 ## How It Works
 
-1. **Install & Activate**: The extension starts monitoring automatically upon VS Code startup.
-2. **Let AI Work**: Use an AI coding assistant (e.g., in a side chat or inline generation) to write code.
-3. **Detection Trigger**: When the extension detects rapid document changes (simulating AI generation speed), the LeetClaude panel slides open.
-4. **Solve & Run**: Read the problem description, write your Python solution, and click "Run" to test it.
-5. **Resume Work**: Once the AI finishes or you close the panel, you can return to your main work.
+1. Once the extension is installed, MCP is configured, and the system prompt is added to the agent, the system monitors the coding agent.
+2. When the agent is generating code or thinking, a LeetCode problem opens in a side panel for you to solve.
+3. When the agent finishes its task, the panel closes and you can return to vibe coding.
 
 ## Requirements
 
 - **Python**: You must have Python installed and available in your system PATH (accessable via `python` or `python3`).
 
-## Extension Settings
+## Installation
+**After installing the extension, you need to configure the MCP**
+    - Note you may need to restart vscode for the extension to work
+    
+### MCP Integration (Model Context Protocol)
+**For best experience please configure the MCP**
+LeetClaude supports MCP, allowing AI agents (like Claude Desktop, Cursor, etc.) to control the extension.
 
-This extension currently uses internal heuristics for detection:
-- **Activity Threshold**: ~4 seconds of continuous rapid editing.
-- **Edit Rate**: >3 edits per second.
-- **Quiet Period**: ~2 seconds of inactivity closes the session (or you can manually close it).
+### Configuration
+
+Add the following to your agent's MCP configuration (e.g., `claude_desktop_config.json` or Cursor Settings):
+
+```json
+{
+  "mcpServers": {
+    "leetclaude": {
+        "command": "node",
+        "args": [
+            "/ABSOLUTE/PATH/TO/LeetClaude/out/mcp/server.js"
+        ]
+    }
+  }
+}
+```
+
+> **Note for Users**: After adding the server, please ensure you enable **"Always Allow"** or **"Auto-run"** in the MCP settings. Otherwise, the agent will ask for permission every time it tries to report its status. (pls reffer to docs for your agent)
+
+### System Prompt
+
+Add this to your agent's system prompt or rules to enable automatic usage:
+
+```markdown
+# LeetClaude Integration
+You have access to a tool called `leetclaude_report_status`.
+- Call this tool with `status: "coding"` whenever you are about to write code or solve a problem.
+- Call this tool with `status: "idle"` when you have finished a task.
+```
 
 ## Known Issues
-
 - Currently supports Python solutions only.
-- Relies on edit frequency; extremely fast typists *might* trigger it (though unlikely to sustain the required rate/duration).
 
 ## Release Notes
 
 ### 0.0.1
 - Initial release with basic agent detection and problem provider.
+
+

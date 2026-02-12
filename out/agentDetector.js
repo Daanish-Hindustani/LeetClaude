@@ -50,6 +50,9 @@ class AgentDetector {
         this.onAgentStart = this.onAgentStartEmitter.event;
         this.onAgentEnd = this.onAgentEndEmitter.event;
     }
+    get isActive() {
+        return this.isAgentActive;
+    }
     startMonitoring(context) {
         // Monitor document changes for rapid editing (agent activity)
         const docChangeListener = vscode.workspace.onDidChangeTextDocument((e) => {
@@ -60,14 +63,12 @@ class AgentDetector {
             // Start tracking activity if we see rapid edits
             if (!this.activityStartTime && this.editCount >= this.EDITS_PER_SECOND) {
                 this.activityStartTime = Date.now();
-                console.log('LeetClaude: Rapid editing detected, tracking...');
             }
             // Check if we've hit the threshold
             if (this.activityStartTime && !this.isAgentActive) {
                 const elapsed = Date.now() - this.activityStartTime;
                 if (elapsed >= this.ACTIVITY_THRESHOLD_MS) {
                     this.isAgentActive = true;
-                    console.log('LeetClaude: Agent activity threshold reached');
                     this.onAgentStartEmitter.fire();
                 }
             }
@@ -88,7 +89,6 @@ class AgentDetector {
         }
         this.quietTimer = setTimeout(() => {
             if (this.isAgentActive) {
-                console.log('LeetClaude: Quiet period detected, ending agent activity');
                 this.isAgentActive = false;
                 this.activityStartTime = null;
                 this.editCount = 0;
