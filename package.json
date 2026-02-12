@@ -4,10 +4,10 @@
   "description": "Practice LeetCode while AI agents code for you",
   "version": "0.0.1",
   "icon": "logo.jpeg",
-  "publisher": "your-publisher-id",
+  "publisher": "LeetClaude",
   "repository": {
     "type": "git",
-    "url": "https://github.com/username/leetclaude"
+    "url": "https://github.com/Daanish-Hindustani/LeetClaude"
   },
   "license": "MIT",
   "engines": {
