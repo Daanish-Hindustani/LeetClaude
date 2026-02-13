@@ -56,8 +56,23 @@ To automatically bump the version:
 - **Minor** (0.0.1 -> 0.1.0): `vsce publish minor`
 - **Major** (0.0.1 -> 1.0.0): `vsce publish major`
 
+### Option 2: Web Upload (Drag & Drop)
+If you prefer not to use the command line:
+1.  Run `vsce package` to create `leetclaude-0.0.1.vsix` (Done).
+2.  Go to the [Management Page](https://marketplace.visualstudio.com/manage).
+3.  Select your publisher.
+4.  Click **"New Extension"** -> **"Visual Studio Code"**.
+5.  Drag and drop the `.vsix` file into the upload area.
+
 ## Troubleshooting
 
 - **"Missing publisher name"**: You forgot to update `"publisher"` in `package.json`.
 - **"Make sure you include a README.md"**: Ensure `README.md` is in the root (it is).
 - **"Cwd is not a directory"**: Run commands from the project root (`/Users/daanishhindustano/Documents/projects/LeetClaude`).
+
+## 5. Verification & Availability
+
+After publishing, the Marketplace runs a virus scan and validation.
+- **Initial Verification**: Usually takes **5-10 minutes**.
+- **Indexing**: It may take a bit longer for it to be searchable in VS Code.
+- **Status Check**: You can check the status on your [Manage Extensions](https://marketplace.visualstudio.com/manage) page. It will say "Verifying" or "Live".

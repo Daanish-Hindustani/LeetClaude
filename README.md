@@ -33,7 +33,12 @@ LeetClaude supports MCP, allowing AI agents (like Claude Desktop, Cursor, etc.) 
 
 ### Configuration
 
-Add the following to your agent's MCP configuration (e.g., `claude_desktop_config.json` or Cursor Settings):
+To configure the MCP server easily:
+1. Open the Command Palette (`Cmd+Shift+P` or `Ctrl+Shift+P`)
+2. Run **"LeetClaude: Copy MCP Configuration"**
+3. Paste the copied JSON into your agent's MCP configuration file (e.g., `claude_desktop_config.json` or Cursor Settings)
+
+The generated configuration will look like this (with the correct absolute path for your system):
 
 ```json
 {

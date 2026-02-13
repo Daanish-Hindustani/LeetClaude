@@ -1,8 +1,8 @@
 {
   "name": "leetclaude",
   "displayName": "LeetClaude",
-  "description": "Practice LeetCode while AI agents code for you",
-  "version": "0.0.1",
+  "description": "Practice LeetCode while you vibecode",
+  "version": "0.0.2",
   "icon": "logo.jpeg",
   "publisher": "LeetClaude",
   "repository": {
@@ -33,6 +33,10 @@
       {
         "command": "leetclaude.showProblem",
         "title": "LeetClaude: Show Problem"
+      },
+      {
+        "command": "leetclaude.copyMcpConfig",
+        "title": "LeetClaude: Copy MCP Configuration"
       },
       {
         "command": "leetclaude.stopProblem",

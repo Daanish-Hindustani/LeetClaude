@@ -124,9 +124,25 @@ function activate(context) {
     const stopCommand = vscode.commands.registerCommand('leetclaude.stopProblem', () => {
         stateManager.transition(stateManager_1.AppState.Idle);
     });
+    // Register copy config command
+    const copyConfigCommand = vscode.commands.registerCommand('leetclaude.copyMcpConfig', async () => {
+        const extensionPath = context.extensionUri.fsPath;
+        const serverPath = vscode.Uri.joinPath(context.extensionUri, 'out', 'mcp', 'server.js').fsPath;
+        const config = {
+            mcpServers: {
+                leetclaude: {
+                    command: "node",
+                    args: [serverPath]
+                }
+            }
+        };
+        const configStr = JSON.stringify(config, null, 2);
+        await vscode.env.clipboard.writeText(configStr);
+        vscode.window.showInformationMessage('MCP Configuration copied to clipboard! You can now paste it into your agent settings.');
+    });
     // Start monitoring
     agentDetector.startMonitoring(context);
-    context.subscriptions.push(showCommand, stopCommand, agentDetector, webviewProvider, ipcServer);
+    context.subscriptions.push(showCommand, stopCommand, copyConfigCommand, agentDetector, webviewProvider, ipcServer);
 }
 function showProblem() {
     const active = problemProvider.getActiveProblem();
