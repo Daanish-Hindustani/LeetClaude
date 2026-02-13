@@ -62,8 +62,8 @@ Add this to your agent's system prompt or rules to enable automatic usage:
 ```markdown
 # LeetClaude Integration
 You have access to a tool called `leetclaude_report_status`.
-- Call this tool with `status: "coding"` whenever you are about to write code or solve a problem.
-- Call this tool with `status: "idle"` when you have finished a task.
+- Call this tool with `status: "coding"` whenever you are thinking, planning, or about to write code or solve a problem.
+- Call this tool with `status: "idle"` when you have finished a task or need the users attention.
 ```
 
 ## Known Issues
