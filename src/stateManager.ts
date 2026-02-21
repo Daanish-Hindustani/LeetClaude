@@ -34,9 +34,9 @@ export class StateManager {
     private isValidTransition(from: AppState, to: AppState): boolean {
         const validTransitions: Record<AppState, AppState[]> = {
             [AppState.Idle]: [AppState.AgentActive],
-            [AppState.AgentActive]: [AppState.ProblemShown, AppState.Idle],
-            [AppState.ProblemShown]: [AppState.ProblemCompleted, AppState.Idle],
-            [AppState.ProblemCompleted]: [AppState.Idle]
+            [AppState.AgentActive]: [AppState.ProblemShown, AppState.Idle, AppState.AgentActive],
+            [AppState.ProblemShown]: [AppState.ProblemCompleted, AppState.Idle, AppState.AgentActive],
+            [AppState.ProblemCompleted]: [AppState.Idle, AppState.AgentActive, AppState.ProblemShown]
         };
 
         return validTransitions[from]?.includes(to) ?? false;

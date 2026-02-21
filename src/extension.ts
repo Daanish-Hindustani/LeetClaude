@@ -30,12 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Handle IPC events
     ipcServer.onStatusChange((data) => {
-
-        if (data.status === 'coding' || data.status === 'thinking') {
-            stateManager.transition(AppState.AgentActive);
-        } else if (data.status === 'idle') {
-            stateManager.transition(AppState.Idle);
-        }
+        agentDetector.handleStatusChange(data.status);
     });
 
     // Handle state changes
@@ -123,8 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage('MCP Configuration copied to clipboard! You can now paste it into your agent settings.');
     });
 
-    // Start monitoring
-    agentDetector.startMonitoring(context);
+
 
     context.subscriptions.push(showCommand, stopCommand, copyConfigCommand, agentDetector, webviewProvider, ipcServer);
 }

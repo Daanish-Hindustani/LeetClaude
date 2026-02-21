@@ -61,12 +61,7 @@ function activate(context) {
     ipcServer.start();
     // Handle IPC events
     ipcServer.onStatusChange((data) => {
-        if (data.status === 'coding' || data.status === 'thinking') {
-            stateManager.transition(stateManager_1.AppState.AgentActive);
-        }
-        else if (data.status === 'idle') {
-            stateManager.transition(stateManager_1.AppState.Idle);
-        }
+        agentDetector.handleStatusChange(data.status);
     });
     // Handle state changes
     stateManager.onStateChange((newState) => {
@@ -140,8 +135,6 @@ function activate(context) {
         await vscode.env.clipboard.writeText(configStr);
         vscode.window.showInformationMessage('MCP Configuration copied to clipboard! You can now paste it into your agent settings.');
     });
-    // Start monitoring
-    agentDetector.startMonitoring(context);
     context.subscriptions.push(showCommand, stopCommand, copyConfigCommand, agentDetector, webviewProvider, ipcServer);
 }
 function showProblem() {

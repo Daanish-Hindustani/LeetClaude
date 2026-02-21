@@ -38,13 +38,7 @@ const vscode = __importStar(require("vscode"));
 class AgentDetector {
     constructor() {
         this.disposables = [];
-        this.editCount = 0;
-        this.activityStartTime = null;
         this.isAgentActive = false;
-        this.quietTimer = null;
-        this.ACTIVITY_THRESHOLD_MS = 4000; // 4 seconds of activity to trigger
-        this.QUIET_THRESHOLD_MS = 2000; // 2 seconds of quiet to end
-        this.EDITS_PER_SECOND = 3; // Minimum edits/second to count as "rapid"
         this.onAgentStartEmitter = new vscode.EventEmitter();
         this.onAgentEndEmitter = new vscode.EventEmitter();
         this.onAgentStart = this.onAgentStartEmitter.event;
@@ -53,53 +47,21 @@ class AgentDetector {
     get isActive() {
         return this.isAgentActive;
     }
-    startMonitoring(context) {
-        // Monitor document changes for rapid editing (agent activity)
-        const docChangeListener = vscode.workspace.onDidChangeTextDocument((e) => {
-            if (e.contentChanges.length === 0)
-                return;
-            this.editCount++;
-            this.resetQuietTimer();
-            // Start tracking activity if we see rapid edits
-            if (!this.activityStartTime && this.editCount >= this.EDITS_PER_SECOND) {
-                this.activityStartTime = Date.now();
-            }
-            // Check if we've hit the threshold
-            if (this.activityStartTime && !this.isAgentActive) {
-                const elapsed = Date.now() - this.activityStartTime;
-                if (elapsed >= this.ACTIVITY_THRESHOLD_MS) {
-                    this.isAgentActive = true;
-                    this.onAgentStartEmitter.fire();
-                }
-            }
-        });
-        // Decay edit count over time
-        const decayInterval = setInterval(() => {
-            this.editCount = Math.max(0, this.editCount - 2);
-            if (this.editCount === 0 && !this.isAgentActive) {
-                this.activityStartTime = null;
-            }
-        }, 1000);
-        this.disposables.push(docChangeListener);
-        this.disposables.push({ dispose: () => clearInterval(decayInterval) });
-    }
-    resetQuietTimer() {
-        if (this.quietTimer) {
-            clearTimeout(this.quietTimer);
+    handleStatusChange(status) {
+        const wasActive = this.isAgentActive;
+        // Consider both 'coding' and 'thinking' as active states
+        const isActive = status === 'coding' || status === 'thinking';
+        if (isActive) {
+            this.isAgentActive = true;
+            // Always fire start event to ensure UI is shown/refreshed
+            this.onAgentStartEmitter.fire();
         }
-        this.quietTimer = setTimeout(() => {
-            if (this.isAgentActive) {
-                this.isAgentActive = false;
-                this.activityStartTime = null;
-                this.editCount = 0;
-                this.onAgentEndEmitter.fire();
-            }
-        }, this.QUIET_THRESHOLD_MS);
+        else if (!isActive && wasActive) {
+            this.isAgentActive = false;
+            this.onAgentEndEmitter.fire();
+        }
     }
     dispose() {
-        if (this.quietTimer) {
-            clearTimeout(this.quietTimer);
-        }
         this.disposables.forEach(d => d.dispose());
         this.onAgentStartEmitter.dispose();
         this.onAgentEndEmitter.dispose();
